@@ -68,3 +68,74 @@ def login():
     #click login button
     driver.find_element_by_id('login-button').click()
 
+def play():
+    global playButton
+    playButton = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR,"button[data-testid='play-button'][class='Button-qlcn5g-0 kgFBvD']")))
+
+    exists = ''
+    try:
+        banner_close = driver.find_element_by_id('onetrust-close-btn-container')
+        exists = True
+    except NoSuchElementException:
+        exists = False
+    if exists:
+        banner_close.click()
+    shuffle = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR,"button[data-testid='control-button-shuffle']")))
+
+    print(shuffle.get_attribute('aria-label'))
+    if shuffle.get_attribute('aria-label') == 'Enable shuffle':
+        shuffle.click()
+
+    time.sleep(1)
+    
+    #click play button
+    playButton.click()
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'artist':
+        artist_id = get_artist()
+        link = f'https://open.spotify.com/artist/{artist_id}' 
+    elif sys.argv[1] == 'liked':
+        link = 'https://open.spotify.com/collection/tracks' 
+    else:
+        playlist_id = get_playlist()
+        link = f'https://open.spotify.com/playlist/{playlist_id}'
+else:
+    print('No argument given \n Usage: \n python3 main.py artist \n python3 main.py liked \n python3 main.py playlist')
+    exit()
+
+def next():
+    driver.find_element(By.CSS_SELECTOR,"button[data-testid='control-button-skip-forward']").click()
+
+
+driver = webdriver.Chrome(executable_path='E:\SeleniumDrivers\chromedriver.exe')
+driver.get(link)
+driver.find_element(By.CSS_SELECTOR, "button[data-testid='login-button'][class='Button-qlcn5g-0 gPMZVP']").click()
+
+login()
+play()
+
+while True:
+
+    command = input('Any command: ')
+
+    if command == 'exit':
+        driver.close()
+        exit()
+    elif command == 'next':
+        next()
+    elif command == 'pause' or command=='play':
+        playButton.click()
+
+    elif command == 'other artist':
+        artist_id = get_artist()
+        link = f'https://open.spotify.com/artist/{artist_id}' 
+        driver.get(link)
+        play()
+    elif command == 'other playlist':
+        link = f'https://open.spotify.com/playlist/{playlist[sys.argv[2]]}' 
+        driver.get(link)
+        play()
+    else:
+        print('Invalid command')
+        continue
